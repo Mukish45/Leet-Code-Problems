@@ -1,24 +1,37 @@
 class Solution(object):
     def criticalConnections(self, n, connections):
-        cons = defaultdict(set)
-        for a, b in connections:
-            cons[a].add(b)
-            cons[b].add(a)
-
-        low = {}
-        results = []
-        def visit(node, from_node=None):
-            if node in low: return low[node]
-            cur_id = low[node] = len(low)
-
-            for neigh in cons[node]:
-                if neigh == from_node: continue
-                low[node] = min(low[node], visit(neigh, node))
-
-            if cur_id == low[node] and from_node is not None:
-                results.append([from_node, node])
-            return low[node]
-
-        visit(0)
-        return results
+        graph = defaultdict(list)
+        for v in connections:
+            graph[v[0]].append(v[1])
+            graph[v[1]].append(v[0])
+            
+        dfn = [None for i in range(n)]
+        low = [None for i in range(n)]
+        
+        cur = 0
+        start = 0
+        res = []
+        self.cur = 0
+       
+        def dfs(node,parent):
+            if dfn[node] is None:
+                dfn[node] = self.cur
+                low[node] = self.cur
+                self.cur+=1
+                for n in graph[node]:
+                    if dfn[n] is None:
+                        dfs(n,node)
+                    
+                if parent is not None:
+                    l = min([low[i] for i in graph[node] if i!=parent]+[low[node]])
+                else:
+                    l = min(low[i] for i in graph[node]+[low[node]])
+                low[node] = l
+                
+        dfs(0,None)
+        
+        for v in connections:
+            if low[v[0]]>dfn[v[1]] or low[v[1]]>dfn[v[0]]:
+                res.append(v)
+        return res
         
